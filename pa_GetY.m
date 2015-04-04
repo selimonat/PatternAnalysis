@@ -5,7 +5,7 @@ function [Y]=PatternAnalysis_GetY(subject,phase,nroi,threshold,pattern)
 % Will return the data for SUBJECT, PHASE, NROI, THRESHOLD from files
 % defined with the PATTERN.
 %
-%for ns = subject_list;Y = PatternAnalysis_GetY(ns,2,1,75,pattern);Y = PatternAnalysis_GetY(ns,4,1,75,pattern);end
+%for ns = subject_list;Y = pa_GetY(ns,2,1,75,pattern);Y = pa_GetY(ns,4,1,75,pattern);end
 
 %% save all the time courses
 % threshold       = 75;
