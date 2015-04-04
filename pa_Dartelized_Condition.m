@@ -11,7 +11,7 @@ load /Volumes/feargen2/feargen2/data/midlevel/selectedsubjects.mat%
 [~,version_count] = system('git rev-list --count --first-parent HEAD')
 [~,version_id]    = system('git describe --always')
 for phase     = [2 4];
-    for roi       = 3%:96;        
+    for roi       = 1:96;        
         betas     = [];
         for subject = subject_list(gs);
             %%
