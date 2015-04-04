@@ -19,6 +19,9 @@ while n <= tbs
     D(:,:,n) = squareform( pdist(Br','euclidean'));
     Y(:,:,n) = mdscale(D(:,:,n),dimen,'start','cmdscale','criterion','metricstress');       
     n        = n +1;
+    if rem(n,50) == 0
+        fprintf('Iteration: %d, time: %s\n',n,datestr(now,'HH:MM:SS'));
+    end
 end
 fprintf('Stopped: %s\n',datestr(now,'HH:MM:SS')) 
 %%
