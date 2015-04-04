@@ -34,7 +34,7 @@ if exist(save_path) == 0
         save(save_path2,'Y');
     end    
     %call it self to load from the cache this time.
-    [Y]=PatternAnalysis_GetY(subject,phase,nroi,threshold,pattern);
+    [Y]=pa_GetY(subject,phase,nroi,threshold,pattern);
 else
     fprintf('%s: File will be loaded from cache...\n',mfilename);
     load(save_path);%will spawn Y
