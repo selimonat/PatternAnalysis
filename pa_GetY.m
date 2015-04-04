@@ -38,7 +38,12 @@ if exist(save_path) == 0
 else
     fprintf('%s: File will be loaded from cache...\n',mfilename);
     load(save_path);%will spawn Y
-    
+    % it might be possible that at this threshold level Y has no valid
+    % voxels.
+    if isempty(Y) == 1
+        Y = [];
+        return;
+    end    
 % %     %method 1 (spm):
 % %     % global normalization: multiply with a factor that makes the global
 % %     % mean equal to 100 (session specific grand mean scaling in spmish)

@@ -11,12 +11,18 @@ load /Volumes/feargen2/feargen2/data/midlevel/selectedsubjects.mat%
 [~,version_count] = system('git rev-list --count --first-parent HEAD')
 [~,version_id]    = system('git describe --always')
 for phase     = [2 4];
-    for roi       = 1:96;        
+    for roi       = 3%:96;        
         betas     = [];
         for subject = subject_list(gs);
             %%
             % get data
             Y = pa_GetY(subject,phase,roi,threshold,pattern);
+            if isempty(Y) == 1
+                % it might be possible that at this threshold level Y has
+                % no valid voxels. 
+                fprintf('No data for ROI: %02d, subject:%02d, phase: %02d\n',roi,subject,phase);
+                break;
+            end
             % remove mean
             Y = Y - repmat(mean(Y),size(Y,1),1);
             % get the design matrix
@@ -57,7 +63,7 @@ for phase     = [2 4];
         filename = sprintf('%sver%s_id%s/R%02d_P%02d.png' , save_path , deblank(version_count), deblank(version_id), roi , phase );
         if exist(fileparts(filename)) == 0
             mkdir(fileparts(filename));
-        end
+        end        
         %make the MDS analysis and save the plot
         pa_MDS(betas,filename);
     end

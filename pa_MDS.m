@@ -3,6 +3,11 @@ function pa_MDS(betas,filename)
 %function will generate a 2D MDS-representation of different patterns stored
 %in the columns of M. The error bars will be derived from resampling of
 %different subjects.
+if isempty(betas) == 1
+    % it might be possible that at this threshold level Y has
+    % no valid voxels. 
+    return
+end
 B        = betas;
 c        = GetFearGenColors;
 dimen    = 2;
