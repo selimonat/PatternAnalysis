@@ -20,15 +20,12 @@ if exist(save_path) == 0
     volume_files  = GetNiiFiles(subject,phase,pattern);
     M             = spm_get_space(volume_files{1});
     %% iterate through ROIs and save the time-series one by one...
-    for nroi2 = 1:90
+    for nroi2 = nroi%1:90
         %xyz is in voxel space of the atlas and beta images
         [~,d,xyz]   = LoadFeargenAtlas(threshold,nroi2);
         %
         Y           = spm_get_data(volume_files,xyz);                
-        % remove the all zero lines.
-        i           = sum(abs(Y))==0;
-        fprintf('Roi: %03d, removed %04d voxels coz zero...\n',nroi2,sum(i));
-        Y           = Y(:,~i);
+        %
         save_path2  = sprintf('/Users/onat/Documents/feargen_midlevel/data_matrices/s%02d_p%02d_r%03d_t%03d_%s.mat',subject,phase,nroi2,threshold,cleaned_pattern);
         %% save the time x voxel matrices
         save(save_path2,'Y');
