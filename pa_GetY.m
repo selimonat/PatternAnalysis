@@ -20,9 +20,9 @@ if exist(save_path) == 0
     volume_files  = GetNiiFiles(subject,phase,pattern);
     M             = spm_get_space(volume_files{1});
     %% iterate through ROIs and save the time-series one by one...
-    for nroi2 = 1:96
+    for nroi2 = 1:90
         %xyz is in voxel space of the atlas and beta images
-        [~,d,xyz]   = LoadCommonAtlas(threshold,nroi2);
+        [~,d,xyz]   = LoadFeargenAtlas(threshold,nroi2);
         %
         Y           = spm_get_data(volume_files,xyz);                
         % remove the all zero lines.
