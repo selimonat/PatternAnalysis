@@ -22,7 +22,11 @@ while n <= tbs
     subs     = randsample(1:tsubject,tsubject,1);
     Br       = mean(B(:,1:8,subs),3);
     D(:,:,n) = squareform( pdist(Br','euclidean'));
-    Y(:,:,n) = mdscale(D(:,:,n),dimen,'start','cmdscale','criterion','metricstress');       
+    try
+        Y(:,:,n) = mdscale(D(:,:,n),dimen,'start','cmdscale','criterion','metricstress');       
+    catch
+        fprintf('This iteration will not converge, trying one more time...\n');
+    end
     n        = n +1;
     if rem(n,50) == 0
         fprintf('Iteration: %d, time: %s\n',n,datestr(now,'HH:MM:SS'));
