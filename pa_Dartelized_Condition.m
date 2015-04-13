@@ -7,15 +7,15 @@ pattern           = '^swRealigned.*nii$';
 gs                = [2 4 7 8 9 11 12 14 16 18 20 21 24 27];
 load /Volumes/feargen2/feargen2/data/midlevel/selectedsubjects.mat%
 %get the version of number of the analysis
-[~,version_count] = system('git rev-list --count --first-parent HEAD')
-[~,version_id]    = system('git describe --always')
+[~,version_count] = system('git rev-list --count --first-parent HEAD');
+[~,version_id]    = system('git describe --always');
 for phase     = [2 4];
     for roi       = 1:90;        
         betas     = [];
         for subject = subject_list(gs);
             %%
             % get data
-            Y = pa_GetY(subject,phase,roi,threshold,pattern);
+            Y     = pa_GetY(subject,phase,roi,threshold,pattern);
             if isempty(Y) == 1
                 % it might be possible that at this threshold level Y has
                 % no valid voxels. 
@@ -26,7 +26,8 @@ for phase     = [2 4];
             Y     = Y - repmat(mean(Y),size(Y,1),1);
             % get the design matrix
             X     = pa_GetDesignMatrix(subject,phase);
-            beta  = pa_GetBetas(X,Y);            
+            N     = pa_GetNuis(subject,phase,pattern);
+            beta  = pa_GetBetas(X,Y,N,HParam);            
             %% get the betas as (voxel,condition,subject) matrix
             betas = cat(3,betas,beta);
         end
