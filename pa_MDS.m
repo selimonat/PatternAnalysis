@@ -12,7 +12,7 @@ B        = betas;
 c        = GetFearGenColors;
 dimen    = 2;
 tsubject = size(B,3);
-tbs      = 1000;
+tbs      = 5000;
 %%
 D = zeros(8,8,tbs);
 Y = zeros(8,2,tbs);
@@ -23,7 +23,7 @@ while n <= tbs
     Br       = mean(B(:,1:8,subs),3);
     D(:,:,n) = squareform( pdist(Br','euclidean'));
     try
-        Y(:,:,n) = mdscale(D(:,:,n),dimen,'start','cmdscale','criterion','metricstress');       
+        Y(:,:,n) = mdscale(D(:,:,n),dimen,'start','cmdscale','criterion','metricstress','reflection','false');
     catch
         fprintf('This iteration will not converge, trying one more time...\n');
     end
