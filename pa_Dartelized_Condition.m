@@ -2,7 +2,7 @@
 cd /Users/onat/Documents/Code/Matlab/PatternAnalysis;
 save_path         = '/Users/onat/Pictures/PatternAnalysis/';
 HParam            = 128;%high pass filter parameter
-threshold         = 75;
+threshold         = 50;
 pattern           = '^swRealigned.*nii$';
 gs                = [2 4 7 8 9 11 12 14 16 18 20 21 24 27];
 load /Volumes/feargen2/feargen2/data/midlevel/selectedsubjects.mat%
@@ -31,11 +31,13 @@ for phase     = [2 4];
             %% get the betas as (voxel,condition,subject) matrix
             betas = cat(3,betas,beta);
         end
-        filename = sprintf('%sver%s_id%s/R%02d_P%02d.png' , save_path , deblank(version_count), deblank(version_id), roi , phase );
+        %% mds analysis
+        type     = 'mdsscale_metrics';
+        filename = sprintf('%sver%s_id%s/%s/R%02d_P%02d.png' , save_path , deblank(version_count), deblank(version_id),type, roi , phase );
         if exist(fileparts(filename)) == 0
             mkdir(fileparts(filename));
         end        
         %make the MDS analysis and save the plot
-        pa_MDS(betas,filename);
+        pa_MDS(betas,filename,type);
     end
 end

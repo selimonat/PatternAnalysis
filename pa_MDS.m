@@ -1,4 +1,4 @@
-function pa_MDS(betas,filename)
+function pa_MDS(betas,filename,type)
 %given a VxCxS matrix M, with C conditions, V voxels and S subjects, this
 %function will generate a 2D MDS-representation of different patterns stored
 %in the columns of M. The error bars will be derived from resampling of
@@ -12,7 +12,9 @@ B        = betas;
 c        = GetFearGenColors;
 dimen    = 2;
 tsubject = size(B,3);
-tbs      = 5000;
+tbs      = 1000;
+%initial starting point.
+init_circle = [cos(linspace(0,2*pi-2*pi/8,8)) ; sin(linspace(0,2*pi-2*pi/8,8))]';
 %%
 D = zeros(8,8,tbs);
 Y = zeros(8,2,tbs);
@@ -23,7 +25,12 @@ while n <= tbs
     Br       = mean(B(:,1:8,subs),3);
     D(:,:,n) = squareform( pdist(Br','euclidean'));
     try
-        Y(:,:,n) = mdscale(D(:,:,n),dimen,'start','cmdscale','criterion','metricstress','reflection','false');
+        if strcmp(type,'mdsscale_metrics')
+            Y(:,:,n) = mdscale(D(:,:,n),dimen,'start',init_circle,'criterion','metricstress');
+            %at this point the mean of x, y dimensions is 0, we further scale
+            %it to "unit" std
+        end
+        Y(:,:,n) = Y(:,:,n)./std(Y(:));
     catch
         fprintf('This iteration will not converge, trying one more time...\n');
     end
