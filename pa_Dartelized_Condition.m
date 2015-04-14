@@ -1,3 +1,4 @@
+function pa_Dartelized_Condition(type)
 %%
 cd /Users/onat/Documents/Code/Matlab/PatternAnalysis;
 save_path         = '/Users/onat/Pictures/PatternAnalysis/';
@@ -31,8 +32,7 @@ for phase     = [2 4];
             %% get the betas as (voxel,condition,subject) matrix
             betas = cat(3,betas,beta);
         end
-        %% mds analysis
-        type     = 'mdsscale_metrics';
+        %% mds analysis        
         filename = sprintf('%sver%s_id%s/%s/R%02d_P%02d.png' , save_path , deblank(version_count), deblank(version_id),type, roi , phase );
         if exist(fileparts(filename)) == 0
             mkdir(fileparts(filename));

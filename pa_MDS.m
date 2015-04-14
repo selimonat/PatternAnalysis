@@ -29,6 +29,8 @@ while n <= tbs
             Y(:,:,n) = mdscale(D(:,:,n),dimen,'start',init_circle,'criterion','metricstress');
             %at this point the mean of x, y dimensions is 0, we further scale
             %it to "unit" std
+        elseif strcmp(type,'mdsscale_stress')
+            Y(:,:,n) = mdscale(D(:,:,n),dimen,'start',init_circle,'criterion','stress');
         end
         Y(:,:,n) = Y(:,:,n)./std(Y(:));
     catch
