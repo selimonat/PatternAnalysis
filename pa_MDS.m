@@ -17,6 +17,7 @@ tsubject = size(B,3);
 tbs      = 500;
 %initial starting point.
 init_circle = [cos(linspace(0,2*pi-2*pi/8,8)) ; sin(linspace(0,2*pi-2*pi/8,8))]';
+stats       = statset('maxiter',5000,'display','final');
 %%
 D = zeros(8,8,tbs);
 Y = zeros(8,2,tbs);
@@ -27,7 +28,7 @@ while n <= tbs
     Br       = mean(B(:,1:8,subs),3);
     D(:,:,n) = squareform( pdist(Br','euclidean'));
     try        
-        Y(:,:,n) = mdscale(D(:,:,n),dimen,'start',init_circle,'criterion',criterion);
+        Y(:,:,n) = mdscale(D(:,:,n),dimen,'start',init_circle,'criterion',criterion,'options',stats);
             %at this point the mean of x, y dimensions is 0, we further scale
             %it to "unit" std
         Y(:,:,n) = Y(:,:,n)./std(Y(:));
