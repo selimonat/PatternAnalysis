@@ -1,8 +1,10 @@
-function pa_MDS(betas,filename,type)
+function pa_MDS(betas,filename,criterion)
 %given a VxCxS matrix M, with C conditions, V voxels and S subjects, this
 %function will generate a 2D MDS-representation of different patterns stored
 %in the columns of M. The error bars will be derived from resampling of
 %different subjects.
+%
+% TYPE: criterion for mdsscale 
 if isempty(betas) == 1
     % it might be possible that at this threshold level Y has
     % no valid voxels. 
@@ -12,7 +14,7 @@ B        = betas;
 c        = GetFearGenColors;
 dimen    = 2;
 tsubject = size(B,3);
-tbs      = 1000;
+tbs      = 500;
 %initial starting point.
 init_circle = [cos(linspace(0,2*pi-2*pi/8,8)) ; sin(linspace(0,2*pi-2*pi/8,8))]';
 %%
@@ -24,14 +26,10 @@ while n <= tbs
     subs     = randsample(1:tsubject,tsubject,1);
     Br       = mean(B(:,1:8,subs),3);
     D(:,:,n) = squareform( pdist(Br','euclidean'));
-    try
-        if strcmp(type,'mdsscale_metrics')
-            Y(:,:,n) = mdscale(D(:,:,n),dimen,'start',init_circle,'criterion','metricstress');
+    try        
+        Y(:,:,n) = mdscale(D(:,:,n),dimen,'start',init_circle,'criterion',criterion);
             %at this point the mean of x, y dimensions is 0, we further scale
             %it to "unit" std
-        elseif strcmp(type,'mdsscale_stress')
-            Y(:,:,n) = mdscale(D(:,:,n),dimen,'start',init_circle,'criterion','stress');
-        end
         Y(:,:,n) = Y(:,:,n)./std(Y(:));
     catch
         fprintf('This iteration will not converge, trying one more time...\n');
