@@ -41,7 +41,7 @@ while n <= tbs
 end
 fprintf('Stopped: %s\n',datestr(now,'HH:MM:SS')) 
 %%
-for i =1:size(Y,3);[d, Z(:,:,i), tr] = procrustes(mean(Y,3),Y(:,:,i),'reflection',false);end
+for i =1:size(Y,3);[d, Z(:,:,i), tr] = procrustes(mean(Y,3),Y(:,:,i),'reflection',true);end
 %
 x = squeeze(Z(:,1,:));
 y = squeeze(Z(:,2,:));
