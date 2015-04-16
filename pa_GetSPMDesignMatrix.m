@@ -25,7 +25,7 @@ k                 = size(dm,1);
 % onsets(1)         = [];
 % conds(1)          = [];
 %% prepare spm-compatible structure
-fMRI_T                = spm_get_defaults('stats.fmri.t');
+fMRI_T                = 16;%spm_get_defaults('stats.fmri_t');
 fMRI_T0               = 1;%spm_get_defaults('stats.fmri.t0');in spm8 it was 1, so I am keeping it here
 xBF.T                 = fMRI_T;
 xBF.T0                = fMRI_T0;
