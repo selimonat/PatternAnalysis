@@ -15,7 +15,7 @@ default.threshold = 50;
 
 %subjects
 default.subject_list = [2 3 4 5 6 8 9 11 12 13 14 16 18 19 20 21 22 25 26 27 28 29 30 31 32 33 34 35 36];
-default.gs_index     = [2 4 7 8 9 11 12 14 16 18 20 21 24 27];
+default.gs_index     = [2 4 7 8 9 11 12 14 16 18 20 21 24 27];                       
 default.gs           = default.subject_list(default.gs_index);%tuned subjects
 default.bs           = setdiff(default.subject_list,default.gs);%untuned subjects
 
@@ -25,6 +25,9 @@ default.RT           = 2.02;
 
 %stimuli
 default.design       = @pa_GetDesignMatrix;%will return design, onsets
+default.conditions   = 1:8;%columns of interest in the design matrix
+default.tcond        = length(default.conditions);
+default.phases       = [2 4];
 %
 %if requested simply return the field
 if nargin == 1    
