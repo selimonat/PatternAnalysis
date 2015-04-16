@@ -28,7 +28,7 @@ end
 c = 0;
 for n = 1:length(what)
     filename = sprintf('%ssub%03d/phase%02d/midlevel/%s_%s.mat',pa_GetRoot,subject,phase,mfilename,what{n});
-    if exist(filename) == 0 || 1
+    if exist(filename) == 0 
         fprintf('%s: Getting %s Nuis.Var for %02d-%02d.\n',mfilename,what{n},subject,phase)        
         %get the data
         if strcmp(what{n}(1:2),'mc')            
