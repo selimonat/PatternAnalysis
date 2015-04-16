@@ -17,6 +17,8 @@ function [Y]=pa_GetY(subject,phase,nroi,threshold,pattern)
 cleaned_pattern = pattern(isstrprop(pattern,'alphanum'));
 save_path       = sprintf('%sdata_matrices/s%02d_p%02d_r%03d_t%03d_%s.mat',pa_defaults('save_path'),subject,phase,nroi,threshold,cleaned_pattern);
 %
+atlas_name      = pa_defaults('atlas'); 
+%
 Y               = [];%init
 GM              = 100;%global target mean
 if exist(save_path) == 0
@@ -27,7 +29,7 @@ if exist(save_path) == 0
     %% iterate through ROIs and save the time-series one by one...
     for nroi2 = nroi
         %xyz is in voxel space of the atlas and beta images
-        [~,d,xyz]   = pa_GetAtlas(threshold,nroi2);        
+        [~,d,xyz]   = pa_GetAtlas(atlas_name,threshold,nroi2);        
         %
         Y           = spm_get_data(volume_files,xyz);                
         %

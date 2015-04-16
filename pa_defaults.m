@@ -5,7 +5,7 @@ function [default]=pa_defaults(varargin)
 %VARARGIN. If there is no match [] is returned.
 
 %data path
-default.save_path = '/Users/onat/Documents/pa_midlevel/';
+default.save_path = '/Users/onat/Documents/feargen_midlevel/';
 
 %atlas business
 default.atlas     = 'FeargenMerged';%the name of the folder where atlas is located.
