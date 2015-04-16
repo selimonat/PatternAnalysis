@@ -2,7 +2,8 @@ function [beta]=pa_GetBetas(X,Y,N)
 %[beta]=pa_GetBetas(X,Y,N)
 %
 % Returns the weights for the design matrix X that fits best the observed
-% BOLD time-series in Y. Y and X are high-pass filtered as in spm.
+% BOLD time-series in Y. Y and X are high-pass filtered as in spm. Can be
+% update to contain the residuals.
 %
 % Dependency: spm_sp, spm_filter
 %
@@ -25,4 +26,4 @@ DM        = spm_sp('Set',DM);
 DM        = spm_sp('x-',DM);% projector;
 beta      = DM*Y;
 %ignore the N coefficients.
-beta      = beta(1:size(X,2),:);
+beta      = beta(pa_defaults('conditions'),:);
