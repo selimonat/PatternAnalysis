@@ -22,7 +22,7 @@ atlas_name      = pa_defaults('atlas');
 Y               = [];%init
 GM              = 100;%global target mean
 if exist(save_path) == 0
-    fprintf('File doesn''t exist so need to save the data first...\n');
+    fprintf('File %03d-%03d-%03d doesn''t exist so need to save the data first...\n',subject,phase,nroi);
     %% load files with a given pattern
     volume_files  = pa_GetBOLDFiles(subject,phase,pattern);
     M             = spm_get_space(volume_files{1});
@@ -41,7 +41,7 @@ if exist(save_path) == 0
     %correction will be applied
     [Y]=pa_GetY(subject,phase,nroi,threshold,pattern);
 else
-    fprintf('%s: File will be loaded from cache...\n',mfilename);
+    fprintf('%s: File %03d-%03d-%03d will be loaded from cache...\n',mfilename,subject,phase,nroi);
     load(save_path);%will spawn Y
     % it might be possible that at this threshold level Y has no valid
     % voxels.

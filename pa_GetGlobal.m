@@ -15,7 +15,7 @@ cleaned_pattern = pattern(isstrprop(pattern,'alphanum'));
 save_path       = sprintf('%sglobals/s%02d_p%02d_%s.mat',pa_defaults('save_path'),subject,phase,cleaned_pattern);
 g               = [];
 if exist(save_path) == 0
-    fprintf('File doesn''t exist so need to save the data first...\n');
+    fprintf('File %02d-%02d doesn''t exist so need to save the data first...\n',subject,phase);
     %% load files with a given pattern
     volume_files  = pa_GetBOLDFiles(subject,phase,pattern);
     volume_files  = strvcat(volume_files);    
@@ -24,6 +24,6 @@ if exist(save_path) == 0
     %% save the time x voxel matrices
     save(save_path,'g');         
 else
-    fprintf('%s: File will be loaded from cache...\n',mfilename);
+    fprintf('%s: File %02d-%02d will be loaded from cache...\n',mfilename,subject,phase);
     load(save_path);
 end

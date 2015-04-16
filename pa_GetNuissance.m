@@ -29,7 +29,7 @@ c = 0;
 for n = 1:length(what)
     filename = sprintf('%ssub%03d/phase%02d/midlevel/%s_%s.mat',pa_GetRoot,subject,phase,mfilename,what{n});
     if exist(filename) == 0 || 1
-        fprintf('%s: Getting %s Nuis.Var.\n',mfilename,what{n})        
+        fprintf('%s: Getting %s Nuis.Var for %02d-%02d.\n',mfilename,what{n},subject,phase)        
         %get the data
         if strcmp(what{n}(1:2),'mc')            
             [dummy, names] = pa_GetMotion(subject,phase,what{n});
@@ -50,7 +50,7 @@ for n = 1:length(what)
         dummy = [];
         save(filename,'nuisance','names');
     else
-        fprintf('%s:\nFile cached: %s\nLoading from cache...\n',mfilename,filename);
+        fprintf('%s:\nFile %02d-%02d cached: %s\nLoading from cache...\n',mfilename,subject,phase,filename);
         load(filename);
     end
 end
