@@ -6,12 +6,11 @@ function [beta]=pa_GetBetas(X,Y,N)
 %
 % Dependency: spm_sp, spm_filter
 %
-% 
 
 
 
 %% Get the High-pass filter by default
-K  = struct('HParam', pa_defaults('HParam') , 'row',    1:size(X,1) , 'RT',     pa_defaults('TR') );
+K  = struct('HParam', pa_defaults('HParam') , 'row',    1:size(X,1) , 'RT',     pa_defaults('RT') );
 Y  = spm_filter(K,Y);
 %%
 % N  = [N K.X0];%combine covariates
@@ -23,5 +22,7 @@ Y  = spm_filter(K,Y);
 DM        = [X N ones(size(X,1),1)];
 DM        = spm_filter(K,DM);
 DM        = spm_sp('Set',DM);
-DM        = spm_sp('x-',DM);                        % projector;
+DM        = spm_sp('x-',DM);% projector;
 beta      = DM*Y;
+%ignore the N coefficients.
+beta      = beta(1:size(X,2),:);
