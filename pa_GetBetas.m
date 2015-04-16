@@ -1,5 +1,5 @@
-function [beta]=pa_GetBetas(X,Y,N,HParam)
-%[beta]=pa_GetBetas(X,Y,N,HParam)
+function [beta]=pa_GetBetas(X,Y,N)
+%[beta]=pa_GetBetas(X,Y,N)
 %
 % Returns the weights for the design matrix X that fits best the observed
 % BOLD time-series in Y. Y and X are high-pass filtered as in spm.
@@ -11,7 +11,7 @@ function [beta]=pa_GetBetas(X,Y,N,HParam)
 
 
 %% Get the High-pass filter by default
-K  = struct('HParam', HParam , 'row',    1:size(X,1) , 'RT',     2.02);
+K  = struct('HParam', pa_defaults('HParam') , 'row',    1:size(X,1) , 'RT',     pa_defaults('TR') );
 Y  = spm_filter(K,Y);
 %%
 % N  = [N K.X0];%combine covariates
