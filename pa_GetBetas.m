@@ -6,6 +6,13 @@ function [beta]=pa_GetBetas(X,Y,N,HParam)
 % be expanded with an spm-like high-pass filter matrix with parameter HPARAM.
 %
 % important: TR is fixed in the function body.
+%
+% SPM:
+% spm_sp, spm_filter
+%
+% Project:
+% project_getdefaults
+
 
 
 
@@ -17,10 +24,10 @@ function [beta]=pa_GetBetas(X,Y,N,HParam)
 
 %% Get the High-pass filter by default
 K  = struct('HParam', HParam , 'row',    1:size(X,1) , 'RT',     2.02);
-K  = spm_filter(K);
+Y  = spm_filter(K,Y);
 %%
-N  = [N K.X0];%combine covariates
-N  =  N - repmat(mean(N),size(N,1),1);%and demean them
+% N  = [N K.X0];%combine covariates
+% N  =  N - repmat(mean(N),size(N,1),1);%and demean them
 %% plot the nuissance correlation
 %             figure(1)
 %             subplot(1,2,2);
@@ -28,5 +35,10 @@ N  =  N - repmat(mean(N),size(N,1),1);%and demean them
 %             colorbar;
 %             SaveFigure(sprintf('%ssub%03d/phase%02d/figures/%s.png',GetProjectRootFeargen2,subject,phase,'NuissanceCorrelation'));
 %% first residualize with respect to Nuissance parameters.
-Yr   = Y - N*(N\Y);
-beta = (X\Yr)';
+% Yr   = Y - N*(N\Y);
+% beta = (X\Yr)';
+X     = [X N ones(size(X,1),1)];
+xX.xKXs   = spm_sp('Set',spm_filter(K,X));       % KWX
+xX.xKXs.X = full(xX.xKXs.X);
+xX.pKX    = spm_sp('x-',xX.xKXs);                        % projector;
+beta  = xX.pKX*Y;

@@ -1,54 +1,81 @@
-function [X] = PatternAnalysis_GetDesignMatrix(subject,phase);
-% [X] = PatternAnalysis_GetDesignMatrix(subject,phase);
-% Will return the Design matrix, X for subject.
+function [dm, onsets]= pa_GetDesignMatrix(subject,phase)
+%[DM, onsets,dm_spm]= GetDesignMatrix(subject,phase)
 %
-% TR is fixed to 2.02
-
-
-%% load the onsets
-load(GetSubjectData(subject,phase,'stimulation'));
-csp               = p.stim.cs_plus;
-dm                = GetDesignMatrix(subject,phase);
-dm                = [circshift(dm(:,1:8),[0 4-csp]) dm(:,9:10)];
-[onsets conds]    = find(dm);
-%this should always give us the correct number of files.
-k                 = size(dm,1);
+%   Returns a binary design matrix based on the pulses recorded at the
+%   physiocomputer by the CED. DM has the same size as the number of
+%   volumes recorded and conditions. If the DM size is different than the
+%   number of recorded volumes, it enters debugging mode. The result is
+%   cached.
+%   
+%   Dependency: pa_GetPhysioData, pa_defaults, pa_GetRoot
 %
-% discard always the first trial
-onsets(1)         = [];
-conds(1)          = [];
-%%
-fMRI_T                = spm_get_defaults('stats.fmri.t');
-fMRI_T0               = spm_get_defaults('stats.fmri.t0');
-xBF.T                 = fMRI_T;
-xBF.T0                = fMRI_T0;
-xBF.dt                = 2.02/xBF.T;
-xBF.UNITS             = 'scans';
-xBF.Volterra          = 1;
-xBF.name              = 'hrf';
-xBF                   = spm_get_bf(xBF);
+%   see also: pa_GetSPMDesignMatrix
 
-%%
-for i = 1:10;%one regressor for each condition
-    Sess.U(i).dt        = xBF.dt;%- time bin (seconds)
+
+dm     = [];
+onsets = [];
+save_path    = sprintf('%ssub%03d/phase%02d/midlevel/%s.mat',pa_GetRoot,subject,phase,mfilename);
+%load from cache or recompute it
+if exist(save_path) == 0 ;
+    TR           = pa_defaults('RT');
+    spike2       = pa_GetPhysioData(subject,phase);
+    %get the number of presented trials
+    load(pa_GetSubjectDataPath(subject,phase,'stimulation'));
+    cond_ind     = p.presentation.cond_id;
+    tStim        = length(cond_ind);
+    tUCS         = sum(p.presentation.cond_id == 9);
+    %get the times
+    stim_times   = spike2.Ch6.times;
+    ucs_times    = spike2.Ch8.times;
+    pulse_times  = spike2.Ch4.times;%pulse sanity check is done in Spike2Matlab
+    %discard stim times which are before the first pulse
+    stim_times(stim_times < pulse_times(1)) = [];
+    ucs_times(ucs_times < pulse_times(1))   = [];
+    %and take the first 293 or 123, basically discard the rating stimulus onsets
+    stim_times   = stim_times(1:tStim);
+    %make the occurence of the 7th volume zero time
+    if subject == 31 && phase == 2        
+        stim_times   = stim_times - pulse_times(29);
+        ucs_times    = ucs_times  - pulse_times(29);
+    else
+        stim_times   = stim_times - pulse_times(7);
+        ucs_times    = ucs_times  - pulse_times(7);        
+    end
+    %now replace CSP onsets with the UCS onset, we would like to have GLM that
+    %models the UCS onset not the CSP onset.
+    i                                   = [1 ; find(diff(ucs_times) > 1)+1 ];
+    %TAke the first tUCS entries. in Subject 19, the last input in UCS_TIMES is
+    %wrong, and counted as a UCS, which causes an error. on line 45
+    i                                   = i(1:tUCS);
+    stim_times(p.presentation.ucs == 1) = ucs_times(i);
+    % % see the result
+    % % figure;clf;
+    % % plot(stim_times_,'bo-')
+    % % hold on;
+    % % plot(stim_times,'ro-')
+    % % hold off
     
-    Sess.U(i).ons       = onsets( conds == i );%- onsets    (in SPM.xBF.UNITS)
-    Sess.U(i).name      = {sprintf('%02d',i)};%- cell of names for each input or cause
+    %stim_times to volume index
+    volume_index     = floor(stim_times./TR)+1;
+    volume_index_dec = (stim_times./TR)+1;
     
-    %no parametric modulation here
-    Sess.U(i).dur    =  repmat(0,length(Sess.U(i).ons),1);%- durations (in SPM.xBF.UNITS)
-    Sess.U(i).P.name =  'none';
-    Sess.U(i).P.P    =  'none';
-    Sess.U(i).P.h    =  0;%- order of polynomial expansion
-    Sess.U(i).P.i    =  1;%- sub-indices of u pertaining to P
+    %create a design matrix that has the same size as the number of recorded volumes.
+    volume_files = pa_GetBOLDFiles(subject,phase,'^fTRIO.*nii$');
+    if isempty(volume_files)
+        keyboard;
+    end
+    dm           = zeros(length(volume_files),10);
+    %fill it in with ones where there is an event
+    for ntrial = 1:length(cond_ind)
+        dm(volume_index(ntrial),cond_ind(ntrial)) = 1;
+    end
+    %
+    %prepare a cell array of onsets for each condition
+    for ncond = unique(cond_ind(:)')
+        onsets{ncond} = volume_index_dec(cond_ind == ncond);
+    end
+    save(save_path,'onsets','dm');
+else
+    load(save_path);
+    
 end
-SPM.xBF                 = xBF;
-SPM.nscan               = k;
-SPM.Sess                = Sess;
-SPM.Sess.U              = spm_get_ons(SPM,1);
-U                       = SPM.Sess.U; %for convinience
-%%
-% Convolve stimulus functions with basis functions
-[X,Xn,Fc]               = spm_Volterra(SPM.Sess.U,SPM.xBF.bf,SPM.xBF.Volterra);
-% Resample regressors at acquisition times (32 bin offset)
-X                       = X((0:(k - 1))*fMRI_T + fMRI_T0 + 32,:);
