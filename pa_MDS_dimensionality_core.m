@@ -1,0 +1,73 @@
+function pa_MDS_dimensionality_core(betas,filename,criterion)
+%given a VxCxS matrix M, with C conditions, V voxels and S subjects, this
+%function will generate a 2D MDS-representation of different patterns stored
+%in the columns of M. The error bars will be derived from resampling of
+%different subjects.
+%
+% TYPE: criterion for mdsscale 
+if isempty(betas) == 1
+    % it might be possible that at this threshold level Y has
+    % no valid voxels. 
+    return
+end
+B        = betas;
+c        = GetFearGenColors;
+dimen    = 2;
+tsubject = size(B,3);
+tbs      = 500;
+%initial starting point.
+init_circle = [cos(linspace(0,2*pi-2*pi/8,8)) ; sin(linspace(0,2*pi-2*pi/8,8))]';
+stats       = statset('maxiter',5000,'display','final');
+%%
+D = zeros(8,8,tbs);
+Y = zeros(8,7,tbs);
+E = zeros(8,tbs);
+n = 1;
+fprintf('Resampling subjects (%d times), started: %s\n',tbs,datestr(now,'HH:MM:SS')) 
+while n <= tbs
+    subs     = randsample(1:tsubject,tsubject,1);
+    Br       = mean(B(:,1:8,subs),3);
+    D(:,:,n) = squareform( pdist(Br','euclidean'));
+    try        
+        [Y(:,:,n),E(:,n)] = cmdscale(D(:,:,n)); 
+        %at this point the mean of x, y dimensions is 0, we further scale
+        %it to "unit" std
+        Y(:,:,n) = Y(:,:,n)./std(Y(:));
+    catch
+        fprintf('This iteration will not converge, trying one more time...\n');
+    end
+    n        = n +1;
+    if rem(n,50) == 0
+        fprintf('Iteration: %d, time: %s\n',n,datestr(now,'HH:MM:SS'));
+    end
+end
+fprintf('Stopped: %s\n',datestr(now,'HH:MM:SS')) 
+%%
+for i =1:size(Y,3);[d, Z(:,:,i), tr] = procrustes(mean(Y,3),Y(:,:,i),'reflection',true);end
+%
+x = squeeze(Z(:,1,:));
+y = squeeze(Z(:,2,:));
+%
+figure(2);clf;subplot(1,3,1);hold on;
+set(gcf,'position',[677   506   921/2*3   574])
+for i =1:8;
+    plot(x(i,:),y(i,:),'.','color',c(i,:));    
+end
+for i = 1:8
+    plot(median(x(i,:)),median(y(i,:)),'s','color','k','markersize',20,'markerfacecolor',c(i,:));
+end
+hold off
+axis tight;axis square
+%%
+subplot(1,3,2)
+for i = 1:8;
+    [mvar]=error_ellipse([x(i,:) ;y(i,:)]','color',c(i,:),'linewidth',2);
+    plot(mean(x(i,:),2),mean(y(i,:),2),'o','color',c(i,:),'markersize',15,'markerfacecolor',c(i,:));
+    hold on;
+end
+axis tight;axis square
+%%
+subplot(1,3,3)
+errorbar(1:8,mean(E,2),std(E,1,2),'ko-');
+axis tight;axis square;
+SaveFigure(filename);
