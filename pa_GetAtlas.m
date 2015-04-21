@@ -33,7 +33,7 @@ end
 
 if nargout > 1%mask required
     
-    if nargin == 1%all ROIs are required.
+    if nargin == 2%all ROIs are required.
         roi_index = 1:length(volume_handle);
     else%a specific ROI is required        
         roi_index = varargin{1};        
