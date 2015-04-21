@@ -80,26 +80,30 @@ end
 %%
 ts             = length(unique(i_sub))/2;%total subjects per group
 tc             = length(unique(i_cond));%total conditions
-for nroi       = rois;%run across all ROIs, and fill up the similarity matrix
-    for lr = 1:2
-        fprintf('ROI: %02d, Side: %01d, %s...\n',nroi,lr,datestr(now,'HH:MM:SS'));
+for nroi       = 9%rois;%run across all ROIs, and fill up the similarity matrix
+    for lr = 1:2        
         %Get roiname and voxel indices
         [dummy, mask,xyz]       = pa_GetAtlas(atlas,threshold,nroi+roi_constant(lr));
-        tvox                    = sum(mask.d(:));%total number of voxels                        
+        tvox                    = sum(mask.d(:));%total number of voxels
+        fprintf('ROI %02d (%s): Side: %01d, %s...\n',nroi,mask.name{1},lr,datestr(now,'HH:MM:SS'));
         for groups = {group_context group_nocontext}%run across two groups
             subs = groups{1};%vectorize the cell
             s_c  = 0;%counter init
-            for ns = subs
-                fprintf('.');
+            for ns = subs  
+                fprintf('.')
                 s_c = s_c + 1;                
                 dummy = beta_list((i_sub == ns),:);%36 conditions for subject NS
                 %store the matrix once as raw and then after common pattern
                 %correction
-                gr              = unique(i_group(i_sub == ns)) + 1;%+1 to avoid zero indexing
-                roi.raw         = spm_get_data(spm_vol(dummy),xyz)';
+                gr                 = unique(i_group(i_sub == ns)) + 1;%+1 to avoid zero indexing
+                roi.raw            = spm_get_data(spm_vol(dummy),xyz)';
+                %clean from voxels that do not change across conditions
+                nz                 = ~any(diff(roi.raw'));
+                removed_zeros(s_c) = sum(nz);
+                roi.raw(nz,:)      = [];
                 %motion correction
-                common_pattern  = mean( roi.raw ,2);%average across conditions (but not across sub or group)
-                roi.mc          = roi.raw - repmat(common_pattern,[1 tc 1 1]);
+                common_pattern     = mean( roi.raw ,2);%average across conditions (but not across sub or group)
+                roi.mc             = roi.raw - repmat(common_pattern,[1 tc 1 1]);
                 % at this stage we have a cell array ROI, which stores beta values for
                 % all conditions, subjects and groups. Left/Right has to be distributed
                 % to different cells because the number of voxels is different, so it
@@ -133,8 +137,13 @@ for nroi       = rois;%run across all ROIs, and fill up the similarity matrix
                         end
                         
                     end
-                end
-            end            
+                end             
+            end
+            %display results on removed voxels for sanity.
+            fprintf('%3g (of %3g) voxels were removed.\n',mean(removed_zeros),length(nz));
+            if mean(removed_zeros) ~= 0
+                fprintf('\tfrom subjects: ');fprintf('%g, ',find(removed_zeros));fprintf('\n');
+            end
         end
         fprintf('\n');
     end
