@@ -23,7 +23,11 @@ function [volume_handle,roi,xyz]=pa_GetAtlas(atlas,threshold,varargin)
 
 %these two are the products of the FeargenROIPrepare.m, which is located at
 %the atlas directory.
-atlas_path    = ['/Users/onat/Documents/fsldata/atlases/' atlas '/'];
+if ismac
+    atlas_path    = ['/Users/onat/Documents/fsldata/atlases/' atlas '/'];
+else
+    atlas_path    = ['/home/schenk/Documents/MATLAB/RSA/' atlas '/'];
+end
 volume_handle = spm_vol([atlas_path 'AtlasCleaned.nii']);
 name          = textread([atlas_path 'LabelsCleaned.txt'],'%s');
 %
@@ -35,8 +39,8 @@ if nargout > 1%mask required
     
     if nargin == 1%all ROIs are required.
         roi_index = 1:length(volume_handle);
-    else%a specific ROI is required        
-        roi_index = varargin{1};        
+    else%a specific ROI is required
+        roi_index = varargin{1};
     end
     
     roi      = [];
