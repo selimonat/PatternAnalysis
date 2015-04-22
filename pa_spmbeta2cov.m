@@ -37,6 +37,8 @@ if ismac
 else    
     a = load(sprintf('%s2ndlevel/15_04_21s4_f12_Mcue_ffMcue1_dummy/SPM.mat',project_path));
     b = load(sprintf('%s2ndlevel/15_04_21s4_f12_Mcue_ffMcue2_dummy/SPM.mat',project_path));
+%     a = load(sprintf('%s2ndlevel/15_04_21s4_f12_Mpain_ffMcue1_dummy/SPM.mat',project_path));
+%     b = load(sprintf('%s2ndlevel/15_04_21s4_f12_Mpain_ffMcue2_dummy/SPM.mat',project_path));
 end
 
 beta_list = [strvcat(a.SPM.xY.VY(:).fname); strvcat(b.SPM.xY.VY(:).fname)];
@@ -149,6 +151,8 @@ for nroi       = rois;%run across all ROIs, and fill up the similarity matrix
     end
     sim.name = mask.name{1};%store the name
 end
+save(sprintf('%s/simmatcue.mat',analysis_path),'sim');
+% save(sprintf('%s/simmatpain.mat',analysis_path),'sim');
 fprintf('Analysis finished in %.2g minutes.\n',toc/60);
 
 
