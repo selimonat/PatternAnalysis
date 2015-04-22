@@ -21,8 +21,8 @@ group_nocontext   = cond_defaults('group_nocontext');
 atlas             = cond_defaults('atlas');
 threshold         = cond_defaults('threshold');
 metrics           = cond_defaults('metrics');
-vis               = 0;%visuals
-start             = tic; % start clock
+vis               = 1;%visuals
+start             = tic; % start clock % what is the start variable used for?
 
 %% Get the beta file list.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -80,7 +80,7 @@ end
 %%
 ts             = length(unique(i_sub))/2;%total subjects per group
 tc             = length(unique(i_cond));%total conditions
-for nroi       = 9%rois;%run across all ROIs, and fill up the similarity matrix
+for nroi       = rois;%run across all ROIs, and fill up the similarity matrix
     for lr = 1:2        
         %Get roiname and voxel indices
         [dummy, mask,xyz]       = pa_GetAtlas(atlas,threshold,nroi+roi_constant(lr));
@@ -99,7 +99,7 @@ for nroi       = 9%rois;%run across all ROIs, and fill up the similarity matrix
                 roi.raw            = spm_get_data(spm_vol(dummy),xyz)';
                 %clean from voxels that do not change across conditions
                 nz                 = ~any(diff(roi.raw'));
-                removed_zeros(s_c) = sum(nz);
+                removed_zeros(s_c) = sum(nz); % nr of voxels with 0 change over conditions
                 roi.raw(nz,:)      = [];
                 %motion correction
                 common_pattern     = mean( roi.raw ,2);%average across conditions (but not across sub or group)
