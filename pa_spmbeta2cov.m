@@ -16,6 +16,7 @@ vs                = cond_defaults('fov'); %[121 145 121]
 project_path      = cond_defaults('project_path');%/where the data is '/projects/cond/'
 analysis_path     = fileparts(which('cond_defaults'));%where the analysis scripts are located. '/home/schenk/Documents/MATLAB/RSA'
 [Version, ID]     = GetGit(analysis_path);
+results_path      = sprintf('%smidlevel/%s_%s_%s',project_path,'pa_spmbeta2cov',Version,ID);
 group_context     = cond_defaults('group_context');%subject groups
 group_nocontext   = cond_defaults('group_nocontext');
 atlas             = cond_defaults('atlas');
@@ -152,8 +153,7 @@ for nroi       = rois;%run across all ROIs, and fill up the similarity matrix
     end
     sim.name = mask.name{1};%store the name
 end
-save(sprintf('%s/simmatcue.mat',analysis_path),'sim');
-% save(sprintf('%s/simmatpain.mat',analysis_path),'sim');
+save(sprintf('%s/simmatcue.mat',results_path),'sim');
 fprintf('Analysis finished in %.2g minutes.\n',toc/60);
 
 
