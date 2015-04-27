@@ -134,8 +134,9 @@ for nroi       = rois;%run across all ROIs, and fill up the similarity matrix
                         if ~isempty(smat)
                             %store
                             c_metric             = c_metric + 1;
-                            sim.metric{c_metric} = metric{1};
-                            sim.(dtype{1})(:,:,s_c,gr,nroi,lr,c_metric) = smat;
+                            %[condition,condition,subject,roi,phase]
+                            sim.(dtype{1}).(metric{c_metric})(:,:,s_c, nroi+troi*(lr-1), gr) = smat;
+                            
                         end
                         
                     end
