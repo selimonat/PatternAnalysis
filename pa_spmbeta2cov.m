@@ -132,11 +132,9 @@ for nroi       = rois;%run across all ROIs, and fill up the similarity matrix
                                 smat     = squareform(pdist(data',metric{1})); % i do not get this line (and its not working)
                             end
                         end
-                        if ~isempty(smat)
-                            %store
-                            c_metric             = c_metric + 1;
+                        if ~isempty(smat)                           
                             %[condition,condition,subject,roi,phase]
-                            sim.(dtype{1}).(metric{c_metric})(:,:,s_c, nroi+troi*(lr-1), gr) = smat;
+                            sim.(dtype{1}).(metric{1})(:,:,s_c, nroi+troi*(lr-1), gr) = smat;
                             
                         end
                         
