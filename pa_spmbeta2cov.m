@@ -17,13 +17,14 @@ project_path      = cond_defaults('project_path');%/where the data is '/projects
 analysis_path     = fileparts(which('cond_defaults'));%where the analysis scripts are located. '/home/schenk/Documents/MATLAB/RSA'
 [Version, ID]     = GetGit(analysis_path);
 results_path      = sprintf('%smidlevel/%s_%s_%s',project_path,'pa_spmbeta2cov',Version,ID);
+mkdir(results_path);
 group_context     = cond_defaults('group_context');%subject groups
 group_nocontext   = cond_defaults('group_nocontext');
 atlas             = cond_defaults('atlas');
 threshold         = cond_defaults('threshold');
 metrics           = cond_defaults('metrics');
-vis               = 1;%visuals
-start             = tic; % start clock % what is the start variable used for?
+vis               = 0;%visuals
+tic; % start clock % what is the start variable used for?
 
 %% Get the beta file list.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -83,12 +84,15 @@ end
 %%
 ts             = length(unique(i_sub))/2;%total subjects per group
 tc             = length(unique(i_cond));%total conditions
+sim            = [];
 for nroi       = rois;%run across all ROIs, and fill up the similarity matrix
     for lr = 1:2        
         %Get roiname and voxel indices
         [dummy, mask,xyz]       = pa_GetAtlas(atlas,threshold,nroi+roi_constant(lr));
         tvox                    = sum(mask.d(:));%total number of voxels
         fprintf('ROI %02d (%s): Side: %01d, %s...\n',nroi,mask.name{1},lr,datestr(now,'HH:MM:SS'));
+        %save the roi name also
+        sim.roiname{nroi+troi*(lr-1)} = mask.name;
         for groups = {group_context group_nocontext}%run across two groups
             subs = groups{1};%vectorize the cell
             s_c  = 0;%counter init
@@ -132,10 +136,12 @@ for nroi       = rois;%run across all ROIs, and fill up the similarity matrix
                                 smat     = squareform(pdist(data',metric{1})); % i do not get this line (and its not working)
                             end
                         end
+                        if sum(isnan(smat(:))) ~= 0;
+                            keyboard;
+                        end
                         if ~isempty(smat)                           
                             %[condition,condition,subject,roi,phase]
-                            sim.(dtype{1}).(metric{1})(:,:,s_c, nroi+troi*(lr-1), gr) = smat;
-                            
+                            sim.(dtype{1}).(metric{1})(:,:,s_c, nroi+troi*(lr-1), gr) = smat;                                                        
                         end
                         
                     end
@@ -151,7 +157,7 @@ for nroi       = rois;%run across all ROIs, and fill up the similarity matrix
     end
     sim.name = mask.name{1};%store the name
 end
-save(sprintf('%s/simmatcue.mat',results_path),'sim');
+save(sprintf('%s/simmat.mat',results_path),'sim');
 fprintf('Analysis finished in %.2g minutes.\n',toc/60);
 
 
