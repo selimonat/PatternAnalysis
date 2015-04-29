@@ -4,9 +4,10 @@ function [default]=cond_defaults(varargin)
 %Returns either all default values or simply the requested one in
 %VARARGIN. If there is no match [] is returned.
 
-%
-default.atlas         = 'CommonAtlas';%the name of the folder where atlas is located.
+%These two entries depend on each other!!!
+default.atlas         = 'CommonAtlas_15_15_15';%the name of the folder where atlas is located.
 default.troi          = 96;
+%
 default.threshold     = 50; %threshold for binarizing probability maps
 %
 default.fov           = [121 145 121];
