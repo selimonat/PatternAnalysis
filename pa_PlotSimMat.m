@@ -9,8 +9,11 @@ function pa_PlotSimMat(simmat)
 %
 %
 %   Dependency: pa_defaults, 
-
-
+if ismac
+    atlas=pa_defaults('atlas');
+else 
+atlas=cond_defaults('atlas');
+end
 C         = simmat;%[condition,condition,subject,roi,phase]
 %
 troi      = size(simmat,4);
@@ -23,7 +26,7 @@ fontsize  = 8;
 ffigure;
 for nroi = 1:troi/2
     %
-    [~,roi_name] = pa_GetAtlas(pa_defaults('atlas'),[],nroi);
+    [~,roi_name] = pa_GetAtlas(atlas,[],nroi);
     roi_name     = regexprep(roi_name.name,'_[L,R]_','_');
     %
     h            = subplot(row,col,nroi);
