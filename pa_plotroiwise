@@ -1,0 +1,210 @@
+%function pa_plonroiwise(simmat)
+addpath('\\samba\schenk\Documents\MATLAB\RSA\globalfunctions\');
+results_path='\\samba\schenk\Documents\MATLAB\RSA\';
+load(sprintf('%ssimmatpain1regr.mat',results_path));
+simmat=sim.raw.cov; %[condition,condition,subject,roi,phase]
+load(sprintf('%sbetaspain1regrneu1.mat',results_path));
+betamat=betas.mc.cov;
+rsqmat=rsq;
+if ismac
+    atlas=pa_defaults('atlas');
+else
+    atlas=cond_defaults('atlas');
+end
+
+nroi      = size(simmat,4);
+ncond     = size(simmat,1);
+nreg = size(betamat,1)-2;
+% try
+%     [row,col] = GetSubplotNumber(nroi/2);
+%     row=row+1;
+% catch
+row=5;
+col=4;
+%     col=9;
+% end
+[d u]     = GetColorMapLimits(simmat(:),3);
+fontsize  = 7;
+
+%% model
+V1=[40 80 60 60]; % temp
+V2=[1 0 1 0]; %placcontext
+V3=[0 1 0 1]; %kontrollcontext
+V4=[1 1 -1 -1]; %session
+
+O1=pa_outerproduct(V1);
+O2=pa_outerproduct(V2);
+O3=pa_outerproduct(V3);
+O4=pa_outerproduct(V4);
+
+D         = [1 0 0 0; 0 1 0 0 ; 0 0 1 0 ; 0 0 0 1];%self similarity
+K= ones(4,4); % konstant
+nreg=6; %5 %6
+
+%%%%%%%%%%%%%%%%%%%% figure
+figure;
+%% plot model
+
+h            = subplot(row,col,1);
+subplotChangeSize(h,.009,.009);
+imagesc(O1);
+title('models');
+axis image
+axis off
+h            = subplot(row,col,2);
+subplotChangeSize(h,.009,.009);
+imagesc(O2);
+axis image
+axis off
+h            = subplot(row,col,3);
+subplotChangeSize(h,.009,.009);
+imagesc(O3);
+axis image
+axis off
+h            = subplot(row,col,4);
+subplotChangeSize(h,.009,.009);
+imagesc(O4);
+axis image
+axis off
+
+for croi = 1:(nroi/2)
+    
+    %% plot data
+    
+    [~,roi_name] = pa_GetAtlas(atlas,[],croi);
+    roi_name     = regexprep(roi_name.name,'_[L,R]_','_');
+    
+    matlg1 = simmat(:,:,:,croi,1);matlg1 = reshape(zscore(matlg1(:)),size(matlg1));
+    matlg2 = simmat(:,:,:,croi,2);matlg2 = reshape(zscore(matlg2(:)),size(matlg2));
+    matrg1 = simmat(:,:,:,croi+nroi/2,1);matrg1 = reshape(zscore(matrg1(:)),size(matrg1));
+    matrg2 = simmat(:,:,:,croi+nroi/2,2);matrg2 = reshape(zscore(matrg2(:)),size(matrg2));
+    
+    h            = subplot(row,col,5);
+    subplotChangeSize(h,.009,.009);
+    imagesc(mean( matlg1,3));
+    title(roi_name{1},'interpreter','none','fontsize',fontsize);
+    axis image
+    axis off
+    h            = subplot(row,col,6);
+    subplotChangeSize(h,.009,.009);
+    imagesc(mean( matrg1,3));
+    title('grp 1 R');
+    axis image
+    axis off
+    h            = subplot(row,col,7);
+    subplotChangeSize(h,.009,.009);
+    imagesc(mean( matlg2,3));
+    title('grp 2 L');
+    axis image
+    axis off
+    h            = subplot(row,col,8);
+    subplotChangeSize(h,.009,.009);
+    imagesc(mean( matrg2,3));
+    title('grp 2 R');
+    axis image
+    axis off
+    
+    %% plot betas
+    
+    for gr = 1:2
+        B1=mean(betamat(1,:,croi,gr));
+        B2=mean(betamat(2,:,croi,gr));
+        B3=mean(betamat(3,:,croi,gr));
+        B4=mean(betamat(4,:,croi,gr));
+        B5=mean(betamat(1,:,croi+nroi/2,gr));
+        B6=mean(betamat(2,:,croi+nroi/2,gr));
+        B7=mean(betamat(3,:,croi+nroi/2,gr));
+        B8=mean(betamat(4,:,croi+nroi/2,gr));
+        
+        h            = subplot(row,col,7+gr*2);
+        bar([B1 B2 B3 B4]);
+        title('betas');
+        
+        h            = subplot(row,col,8+gr*2);
+        bar([B5 B6 B7 B8]);
+    end
+    
+    %% test for significance
+    
+    [h1T1L,p1T1L]=ttest(betamat(1,:,croi,1));
+    [h1T2L,p1T2L]=ttest(betamat(1,:,croi,2));
+    [h1TBL,p1TBL]=ttest2(betamat(1,:,croi,1),betamat(1,:,croi,2));
+    [h2T1L,p2T1L]=ttest(betamat(2,:,croi,1));
+    [h2T2L,p2T2L]=ttest(betamat(2,:,croi,2));
+    [h2TBL,p2TBL]=ttest2(betamat(2,:,croi,1),betamat(2,:,croi,2));
+    [h3T1L,p3T1L]=ttest(betamat(3,:,croi,1));
+    [h3T2L,p3T2L]=ttest(betamat(3,:,croi,2));
+    [h3TBL,p3TBL]=ttest2(betamat(3,:,croi,1),betamat(3,:,croi,2));
+    [h4T1L,p4T1L]=ttest(betamat(4,:,croi,1));
+    [h4T2L,p4T2L]=ttest(betamat(4,:,croi,2));
+    [h4TBL,p4TBL]=ttest2(betamat(4,:,croi,1),betamat(4,:,croi,2));
+    
+    [h1T1R,p1T1R]=ttest(betamat(1,:,croi+nroi/2,1));
+    [h1T2R,p1T2R]=ttest(betamat(1,:,croi+nroi/2,2));
+    [h1TBR,p1TBR]=ttest2(betamat(1,:,croi+nroi/2,1),betamat(1,:,croi+nroi/2,2));
+    [h2T1R,p2T1R]=ttest(betamat(2,:,croi+nroi/2,1));
+    [h2T2R,p2T2R]=ttest(betamat(2,:,croi+nroi/2,2));
+    [h2TBR,p2TBR]=ttest2(betamat(2,:,croi+nroi/2,1),betamat(2,:,croi+nroi/2,2));
+    [h3T1R,p3T1R]=ttest(betamat(3,:,croi+nroi/2,1));
+    [h3T2R,p3T2R]=ttest(betamat(3,:,croi+nroi/2,2));
+    [h3TBR,p3TBR]=ttest2(betamat(3,:,croi+nroi/2,1),betamat(3,:,croi+nroi/2,2));
+    [h4T1R,p4T1R]=ttest(betamat(4,:,croi+nroi/2,1));
+    [h4T2R,p4T2R]=ttest(betamat(4,:,croi+nroi/2,2));
+    [h4TBR,p4TBR]=ttest2(betamat(4,:,croi+nroi/2,1),betamat(4,:,croi+nroi/2,2));
+    
+    %% plot ttests
+    
+    h            = subplot(row,col,13);
+    bar([p1T1L p2T1L p3T1L p4T1L]);
+    line([0 6],[0.05 0.05]);
+    ylim([0 0.1]);
+    xlim([0 5]);
+    title('ttest grp1 L');
+    h            = subplot(row,col,14);
+    bar([p1T1R p2T1R p3T1R p4T1R]);
+    line([0 6],[0.05 0.05]);
+    ylim([0 0.1]);
+    xlim([0 5]);
+    title('ttest grp1 R');
+    h            = subplot(row,col,15);
+    bar([p1T2L p2T2L p3T2L p4T2L]);
+    line([0 6],[0.05 0.05]);
+    ylim([0 0.1]);
+    xlim([0 5]);
+    title('ttest grp2 L');
+    h            = subplot(row,col,16);
+    bar([p1T2R p2T2R p3T2R p4T2R]);
+    line([0 6],[0.05 0.05]);
+    ylim([0 0.1]);
+    xlim([0 5]);
+    title('ttest grp2 R');
+    
+    %% plot r2 and group comparison
+    
+    h            = subplot(row,col,17);
+    R1=mean(rsq(:,croi,1));
+    R2=mean(rsq(:,croi,1));
+    R3=mean(rsq(:,croi+nroi/2,2));
+    R4=mean(rsq(:,croi+nroi/2,2));
+    bar([R1 R2 R3 R4]);
+    title('R2 for each model');
+    ylim([0.5 1]);
+    
+    h            = subplot(row,col,18);
+    bar([p1TBL p2TBL p3TBL p4TBL]);
+    line([0 6],[0.05 0.05]);
+    ylim([0 0.1]);
+    xlim([0 5]);
+    title('ttest grp compare L');
+    
+    h            = subplot(row,col,19);
+    bar([p1TBR p2TBR p3TBR p4TBR]);
+    line([0 6],[0.05 0.05]);
+    ylim([0 0.1]);
+    xlim([0 5]);
+    title('ttest grp compare R');
+    
+    % continue to next roi
+    input('Press return key to continue');
+    
+end
