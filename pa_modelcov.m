@@ -28,7 +28,7 @@ nsub=size((sim.mc.cov),3);
 % X2        = [0 0 1 0;0 0 0 1   ; 1 0 0 0; 0 1 0 0];
 % Sess      = [0 1 0 0; 1 0 0 0  ; 0 0 0 1 ; 0 0 1 0 ];%sess
 % D         = [1 0 0 0; 0 1 0 0 ; 0 0 1 0 ; 0 0 0 1];%self similarity
-V1=[40 80 60 60]; % temp
+V1=[0.4 0.8 0.6 0.6]; % temp
 V2=[1 0 1 0]; %placcontext
 V3=[0 1 0 1]; %kontrollcontext
 V4=[1 1 -1 -1]; %session
@@ -37,6 +37,11 @@ O1=pa_outerproduct(V1);
 O2=pa_outerproduct(V2);
 O3=pa_outerproduct(V3);
 O4=pa_outerproduct(V4);
+
+X1        = [0 -1 0 0;-1 0 0 0;0 0 0 1;0 0 1 0;];
+X2        = [0 0 1 0;0 0 0 0;1 0 0 0;0 0 0 0];
+X3        = [0 0 0 0;0 0 0 1;0 0 0 0;0 1 0 0];
+X4        = [0 1 0 0;1 0 0 0;0 0 0 1;0 0 1 0];%sess
 
 D         = [1 0 0 0; 0 1 0 0 ; 0 0 1 0 ; 0 0 0 1];%self similarity
 K= ones(4,4); % konstant
@@ -48,7 +53,7 @@ nreg=6; %5 %6
 bfit=zeros(1,16);
 bres=zeros(1,16);
 for gr  = 1:2;
-    for roi = 1:124;
+    for roi = [1:46 48:108 110:124]; % omit region with no voxels
         for csub = 1:nsub
            
             %[cond,cond,sub,group,roi,laterality,metric]
@@ -63,10 +68,11 @@ for gr  = 1:2;
             end
             %
 %             DM = [X1(:) X2(:) Sess(:) D(:) K(:)];%design matrix
-DM = [O1(:) O2(:) O3(:) O4(:) D(:) K(:)];%design matrix
-% DM = [O4(:) D(:) K(:)];%design matrix
-            [betas.mc.cov(csub,roi,gr).b,betas.mc.cov(csub,roi,gr).dev,betas.mc.cov(csub,roi,gr).stats] = glmfit(DM,Ycollapsmc(:));
-            [betas.raw.cov(csub,roi,gr).b,betas.mc.cov(csub,roi,gr).dev,betas.raw.cov(csub,roi,gr).stats] = glmfit(DM,Ycollapsraw(:));
+DM = [O1(:) O2(:) O3(:) O4(:) D(:) K(:)];%design matrix neu1
+% DM = [X1(:) X2(:) X3(:) X4(:) D(:) K(:)];%design matrix neu2
+            [betas.mc.cov(csub,roi,gr).b,betas.mc.cov(csub,roi,gr).dev,betas.mc.cov(csub,roi,gr).stats] =glmfit(DM,Ycollapsmc(:),'normal','constant','off');
+            [betas.raw.cov(csub,roi,gr).b,betas.mc.cov(csub,roi,gr).dev,betas.raw.cov(csub,roi,gr).stats] =glmfit(DM,Ycollapsraw(:),'normal','constant','off');
+            % costant off because we have it in our model
             
             % the plotroiwise function still uses this data, but can be removed
             % and .stats can be used once glmfit works
@@ -76,12 +82,12 @@ DM = [O1(:) O2(:) O3(:) O4(:) D(:) K(:)];%design matrix
             SStotal = (length(Ycollapsmc(:))-1) * var(Ycollapsmc(:));
             rsq(csub,roi,gr) = 1 - SSresid/SStotal;
         end
-        disp(sim.roiname{roi});
-        disp(mean(rsq(:,roi,gr)));
+%         disp(sim.roiname{roi});
+%         disp(mean(rsq(:,roi,gr)));
     end
 end
-disp('residuals');
-disp(mean(rsq(:,[1:108 110:124],:)));
+disp('r2');
+disp(mean(mean(rsq(:,[1:108 110:124],:))));
 betas.roiname=sim.roiname;
 % save(sprintf('%s/betascue.mat',results_path),'betas');
 % save(sprintf('%s/betascue.mat',samba_path),'betas');
@@ -90,5 +96,5 @@ betas.roiname=sim.roiname;
 % save(sprintf('%s/betascue1regr.mat',results_path),'betas');
 % save(sprintf('%s/betascue1regr.mat',samba_path),'betas');
 save(sprintf('%s/betaspain1regrneu1.mat',results_path),'betas', 'rsq');
-% save(sprintf('%s/betaspain1regrneu1.mat',samba_path),'betas', 'rsq');
+% save(sprintf('%s/betaspain1regrneu2.mat',samba_path),'betas', 'rsq');
 
