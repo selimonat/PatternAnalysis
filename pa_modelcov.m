@@ -1,4 +1,4 @@
-%% Go 
+%% Go
 clear all
 %results_path='/projects/cond/midlevel/pa_spmbeta2cov_45_158ef17';
 % results_path='/projects/cond/midlevel/pa_spmbeta2cov_50_18b3013';
@@ -8,11 +8,10 @@ results_path='\\samba\schenk\Documents\MATLAB\RSA';
 % load simmat
 % load(sprintf('%s/simmatcue.mat',results_path));
 % load(sprintf('%s/simmatpain.mat',results_path));
-% Bigfield=1;
-% load(sprintf('%s/simmatcue1regr.mat',results_path));
+% Bigfield=2;
+load(sprintf('%s/simmatcue1regr.mat',results_path));
 % load(sprintf('%s/simmatpain1regr.mat',results_path));
-load(sprintf('%s/simmatpain1regr.mat',results_path));
-Bigfield=0;
+Bigfield=0; % 0 = 4x4 // 1 = 36x36 --> 4x4 // 2= 36x36
 %% define models
 %collapse
 lut      = kron(reshape([1:16],[4 4])',[ones(9)]);
@@ -28,10 +27,15 @@ nsub=size((sim.mc.cov),3);
 % X2        = [0 0 1 0;0 0 0 1   ; 1 0 0 0; 0 1 0 0];
 % Sess      = [0 1 0 0; 1 0 0 0  ; 0 0 0 1 ; 0 0 1 0 ];%sess
 % D         = [1 0 0 0; 0 1 0 0 ; 0 0 1 0 ; 0 0 0 1];%self similarity
+
 V1=[0.4 0.8 0.6 0.6]; % temp
 V2=[1 0 1 0]; %placcontext
 V3=[0 1 0 1]; %kontrollcontext
 V4=[1 1 -1 -1]; %session
+% V1=[0.4*ones(1,9) 0.8*ones(1,9) 0.6*ones(1,9) 0.6*ones(1,9)]; % temp
+% V2=[ones(1,9) zeros(1,9) ones(1,9) zeros(1,9)]; %placcontext
+% V3=[zeros(1,9) ones(1,9) zeros(1,9) ones(1,9)]; %kontrollcontext
+% V4=[ones(1,9) ones(1,9) -ones(1,9) -ones(1,9)]; %session
 
 O1=pa_outerproduct(V1);
 O2=pa_outerproduct(V2);
@@ -43,58 +47,71 @@ X2        = [0 0 1 0;0 0 0 0;1 0 0 0;0 0 0 0];
 X3        = [0 0 0 0;0 0 0 1;0 0 0 0;0 1 0 0];
 X4        = [0 1 0 0;1 0 0 0;0 0 0 1;0 0 1 0];%sess
 
-D         = [1 0 0 0; 0 1 0 0 ; 0 0 1 0 ; 0 0 0 1];%self similarity
-K= ones(4,4); % konstant
+
+
+%K= ones(4,4); % konstant
 nreg=6; %5 %6
 
 %% fit models
 % betas.mc.cov = nan(nreg,24,124,2);
 % betas.raw.cov = nan(nreg,24,124,2);
-bfit=zeros(1,16);
-bres=zeros(1,16);
+
+if Bigfield ==2
+    D         = eye(36,36);%self similarity
+    K= ones(36,36); % konstant
+    bfit=zeros(1,36*36);
+    bres=zeros(1,36*36);
+else
+    D         = eye(4,4);%self similarity
+    K= ones(4,4); % konstant
+    bfit=zeros(1,4*4);
+    bres=zeros(1,4*4);
+end
+tic
 for gr  = 1:2;
     for roi = [1:46 48:108 110:124]; % omit region with no voxels
         for csub = 1:nsub
-           
+            
             %[cond,cond,sub,group,roi,laterality,metric]
-            Ymc  = mean(sim.mc.cov(:,:,csub,roi,gr),3);  
+            Ymc  = mean(sim.mc.cov(:,:,csub,roi,gr),3);
             Yraw  = mean(sim.raw.cov(:,:,csub,roi,gr),3);
             if Bigfield ==1
-            Ycollapsmc = reshape(accumarray(lut(:),Ymc(:)),[4 4]);
-            Ycollapsraw = reshape(accumarray(lut(:),Yraw(:)),[4 4]);
+                Ycollapsmc = reshape(accumarray(lut(:),Ymc(:)),[4 4]);
+                Ycollapsraw = reshape(accumarray(lut(:),Yraw(:)),[4 4]);
             else
                 Ycollapsmc=Ymc;
                 Ycollapsraw=Yraw;
             end
             %
-%             DM = [X1(:) X2(:) Sess(:) D(:) K(:)];%design matrix
-DM = [O1(:) O2(:) O3(:) O4(:) D(:) K(:)];%design matrix neu1
-% DM = [X1(:) X2(:) X3(:) X4(:) D(:) K(:)];%design matrix neu2
-            [betas.mc.cov(csub,roi,gr).b,betas.mc.cov(csub,roi,gr).dev,betas.mc.cov(csub,roi,gr).stats] =glmfit(DM,Ycollapsmc(:),'normal','constant','off');
-            [betas.raw.cov(csub,roi,gr).b,betas.mc.cov(csub,roi,gr).dev,betas.raw.cov(csub,roi,gr).stats] =glmfit(DM,Ycollapsraw(:),'normal','constant','off');
+            %             DM = [X1(:) X2(:) Sess(:) D(:) K(:)];%design matrix
+%             DM = [O1(:) O2(:) O3(:) O4(:) D(:) K(:)];%design matrix neu1 glmfit
+            DM = [Ycollapsmc(:) O1(:) O2(:) O3(:) O4(:) D(:) K(:)];%design matrix neu2 fitlme
+            tbl = array2table(DM,'VariableNames',{'Y' 'X1' 'X2' 'X3' 'X4' 'D' 'K'});
+            % DM = [X1(:) X2(:) X3(:) X4(:) D(:) K(:)];%design matrix neu2
+%             [betas.mc.cov(csub,roi,gr).b,betas.mc.cov(csub,roi,gr).dev,betas.mc.cov(csub,roi,gr).stats] =glmfit(DM,Ycollapsmc(:),'normal','constant','off');
+%             [betas.raw.cov(csub,roi,gr).b,betas.mc.cov(csub,roi,gr).dev,betas.raw.cov(csub,roi,gr).stats] =glmfit(DM,Ycollapsraw(:),'normal','constant','off');
             % costant off because we have it in our model
-            
+            betas.mc.cov(csub,roi,gr).lme=fitlme(tbl,'Y ~ -1+ X1 + X2+ X3+ X4+ D + K');
+betas.mc.cov(csub,roi,gr).b=fixedEffects(betas.mc.cov(csub,roi,gr).lme);
             % the plotroiwise function still uses this data, but can be removed
             % and .stats can be used once glmfit works
-            bfit(:)=DM*betas.mc.cov(csub,roi,gr).b;
+            bfit(:)=DM(:,2:end)*betas.mc.cov(csub,roi,gr).b;
             bres(:)=Ycollapsmc(:)-bfit(:);
             SSresid = sum(sum(bres.^2));
             SStotal = (length(Ycollapsmc(:))-1) * var(Ycollapsmc(:));
             rsq(csub,roi,gr) = 1 - SSresid/SStotal;
         end
-%         disp(sim.roiname{roi});
-%         disp(mean(rsq(:,roi,gr)));
+        %         disp(sim.roiname{roi});
+        %         disp(mean(rsq(:,roi,gr)));
     end
 end
 disp('r2');
 disp(mean(mean(rsq(:,[1:108 110:124],:))));
 betas.roiname=sim.roiname;
-% save(sprintf('%s/betascue.mat',results_path),'betas');
-% save(sprintf('%s/betascue.mat',samba_path),'betas');
-% save(sprintf('%s/betaspain.mat',results_path),'betas');
-% save(sprintf('%s/betaspain.mat',samba_path),'betas');
-% save(sprintf('%s/betascue1regr.mat',results_path),'betas');
-% save(sprintf('%s/betascue1regr.mat',samba_path),'betas');
-save(sprintf('%s/betaspain1regrneu1.mat',results_path),'betas', 'rsq');
-% save(sprintf('%s/betaspain1regrneu2.mat',samba_path),'betas', 'rsq');
+toc
+save(sprintf('%s/betascueneu2.mat',results_path),'betas', 'rsq');
+% save(sprintf('%s/betaspaineu2.mat',results_path),'betas', 'rsq');
+% save(sprintf('%s/betascue1regrneu1.mat',results_path),'betas', 'rsq');
+% save(sprintf('%s/betaspain1regrneu1.mat',results_path),'betas', 'rsq');
+
 
