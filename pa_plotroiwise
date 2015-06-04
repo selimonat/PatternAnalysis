@@ -4,7 +4,7 @@ results_path='\\samba\schenk\Documents\MATLAB\RSA\';
 load(sprintf('%ssimmatpain1regr.mat',results_path));
 simmat=sim.raw.cov; %[condition,condition,subject,roi,phase]
 % load(sprintf('%sbetaspain1regrneu1.mat',results_path));
-load(sprintf('%sbetaspain1regrneu1.mat',results_path));
+load(sprintf('%sbetaspain1regrneu2.mat',results_path));
 betamat=betas.mc.cov;
 rsqmat=rsq;
 if ismac
