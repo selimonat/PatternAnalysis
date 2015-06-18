@@ -1,11 +1,13 @@
 %% load the data first.
-load /Volumes/feargen2/cond/midlevel/pa_spmbeta2cov_57_f63684f/simmatpain.mat
+results_path='\\samba\schenk\Documents\MATLAB\RSA';
+load(sprintf('%s/simmatpain2.mat',results_path));
+% load(sprintf('%s/simmatcue1regr2.mat',results_path));
 [version, ID]     = GetGit(fileparts(which('cond_defaults')));
-results_path      = sprintf('%smidlevel/%s_%s_%s',cond_defaults('project_path'),'pa_fit',version,ID);
+% results_path      = sprintf('%smidlevel/%s_%s_%s',cond_defaults('project_path'),'pa_fit',version,ID);
 if exist(results_path) ==0;mkdir(results_path);end
 %% put the data (and its residualized version) into a table
 % get necessary variables
-S                 = sim.raw.correlation;%correlation is actually 1-correlation.
+S                 = sim.mc.dis;%correlation is actually 1-correlation.
 roi_names =[];
 for n = 1:length(sim.roiname)
     roi_names{n}  = sim.roiname{n}{1};
@@ -18,6 +20,7 @@ n_elements        = (size(S,1)^2-size(S,1))/2;%number of independent elements in
 t_elements        = n_elements*tsub*tgroup*troi;
 % model regressors
 reg_names         = {'session' 'temperature' 'perception'}; 
+reg=[];
 reg(:,:,1)        = kron([1 1 0 0; 1 1 0 0; 0 0 1 1; 0 0 1 1 ],ones(trialpercond));
 reg(:,:,2)        = kron([1 -1 0 0; -1 1 0 0; 0 0 1 1; 0 0 1 1 ],ones(trialpercond));
 reg(:,:,3)        = kron([1 -1 1 -1; -1 1 -1 1; 1 -1 1 -1; -1 1 -1 1 ],ones(trialpercond));
@@ -56,9 +59,9 @@ end
 %% beta values
 beta.temperature = nan(2,length(unique(I.subject)'),length(unique(I.roi)'),length(unique(I.group)'));
 beta.perception  = nan(2,length(unique(I.subject)'),length(unique(I.roi)'),length(unique(I.group)'));
-DMt              = [ones(630,1) M.temperature];
-DMp              = [ones(630,1) M.perception];
-DMtp              = [ones(630,1) M.temperature M.perception];
+DMt              = [ones(630,1) M.temperature];%%
+DMp              = [ones(630,1) M.perception];%%%
+DMtp              = [ones(630,1) M.temperature M.perception];%%
 for ngroup = unique(I.group)'    
     for nroi = unique(I.roi)'    
         fprintf('Collecting the data from group: %d, roi: %d\n',double(ngroup),double(nroi));
@@ -76,15 +79,16 @@ for ngroup = unique(I.group)'
 end
 %%
 % Plot
-betas       = beta.joint;
-troi        = 124;
+betas       = beta.perception;
+troi        = 30;
 test_limits = [0.0001;0.0005;0.001;0.005;0.01;0.05];
-nbeta       = 3;
+nbeta       = 2; % 1 is constant
+figure;
 for ngroup  = 1:2;    
     %make the test and get best TROI
-    [h pval] = ttest(betas(:,:,ngroup,nbeta));
+    [h pval] = ttest(squeeze(betas(nbeta,:,:,ngroup)));
     [~,i]    = sort(pval);
-    B        = mean(betas(:,i(1:troi),ngroup,nbeta));
+    B        = mean(squeeze(betas(nbeta,:,i(1:troi),ngroup)));
     pval     = pval(i(1:troi));
     %
     subplot(1,2,ngroup);
