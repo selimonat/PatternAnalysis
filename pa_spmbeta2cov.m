@@ -34,8 +34,10 @@ tic; % start clock % what is the start variable used for?
 %this part is still project specific, could be made more general in the
 %future.
 if ismac
-    a = load(sprintf('%s15_04_16s4_f10_Mpain_ffMpains1_dummy/SPM.mat',project_path));
-    b = load(sprintf('%s15_04_16s4_f10_Mpain_ffMpains2_dummy/SPM.mat',project_path));
+%     a = load(sprintf('%s15_04_21s4_f12_Mpain_ffMpain1_dummy/SPM.mat',project_path));
+%     b = load(sprintf('%s15_04_21s4_f12_Mpain_ffMpain2_dummy/SPM.mat',project_path));
+      a = load(sprintf('%s15_04_21s4_f12_Mcue_ffMcue1_dummy/SPM.mat',project_path));
+      b = load(sprintf('%s15_04_21s4_f12_Mcue_ffMcue2_dummy/SPM.mat',project_path));
 else    
     a = load(sprintf('%s2ndlevel/15_04_21s4_f12_Mcue_ffMcue1_dummy/SPM.mat',project_path));
     b = load(sprintf('%s2ndlevel/15_04_21s4_f12_Mcue_ffMcue2_dummy/SPM.mat',project_path));
@@ -50,7 +52,7 @@ if ismac
     for n = 1:size(beta_list ,1)
         %replace path prefix and remove the folder name (because we didn't
         %copy it)
-        dummy= [dummy; regexprep(regexprep(beta_list (n,:),'/projects','/Volumes/feargen2'),'15_04_15s4_f10_Mpain/','')];
+        dummy= [dummy; regexprep(regexprep(beta_list (n,:),'/projects','/Volumes/feargen2'),'15_04_17s4_f12_M.*/','')];
     end
     beta_list = dummy;
     dummy = [];%garbage
@@ -92,7 +94,7 @@ for nroi       = rois;%run across all ROIs, and fill up the similarity matrix
         tvox                    = sum(mask.d(:));%total number of voxels
         fprintf('ROI %02d (%s): Side: %01d, %s...\n',nroi,mask.name{1},lr,datestr(now,'HH:MM:SS'));
         %save the roi name also
-        sim.roiname{nroi+troi*(lr-1)} = mask.name;
+        sim.roiname{nroi+troi*(lr-1)} = mask.name{1};
         for groups = {group_context group_nocontext}%run across two groups
             subs = groups{1};%vectorize the cell
             s_c  = 0;%counter init
@@ -154,8 +156,7 @@ for nroi       = rois;%run across all ROIs, and fill up the similarity matrix
             end
         end
         fprintf('\n');
-    end
-    sim.name = mask.name{1};%store the name
+    end    
 end
 save(sprintf('%s/simmatcue.mat',results_path),'sim');
 % save(sprintf('%s/simmatpain.mat',results_path),'sim');

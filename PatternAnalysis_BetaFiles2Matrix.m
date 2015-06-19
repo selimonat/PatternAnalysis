@@ -172,7 +172,8 @@ elseif strcmp(what2do,'load')
         filename          = sprintf('%sROI_%02d_%01d.mat',cache_path,roi,lr);
         load(filename);
         %
-        [~, atlas]        = LoadFeargenAtlas(thr,roi+45*lr);
+        [~,atlas]=pa_GetAtlas('FeargenMerged',thr,roi+45*lr);
+%         [~, atlas]        = LoadFeargenAtlas(thr,roi+45*lr);
         roiname           = atlas.name;
         roiname           = regexprep(roiname{1},'_[L,R]_','_');
         %%LOAD THE explained variance
